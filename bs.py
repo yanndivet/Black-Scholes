@@ -10,32 +10,9 @@ N = norm.cdf
 
 def N_delta(x:np.array) -> np.array:
     return np.exp(-np.square(x)/2) / sqrt_2pi
-    
-
-def BS_opt(S:np.array, K:np.array, T: np.array, r: np.array, q: np.array, sigma: np.array, call_put: np.array) -> np.array:
-    r_less_q_time_t = np.multiply(np.subtract(r,q), T)
-    exp_r_less_q_time_t = np.exp(r_less_q_time_t)
-    sigma_time_sqrt_t = np.multiply(sigma, np.sqrt(T))
-    forward = np.multiply(S, exp_r_less_q_time_t)
-    ln_f_over_k = np.log(np.divide(forward,K))   # same as ln(S/K) + (r-q)*T
-    d1 = np.divide(ln_f_over_k, sigma_time_sqrt_t) + 0.5 * sigma_time_sqrt_t
-    d2 = np.subtract(d1, sigma_time_sqrt_t)
-    indicator = np.where(call_put=="P", -1, 1)
-    d1_ = np.multiply(d1, indicator)
-    d2_ = np.multiply(d2, indicator)
-    
-    return np.multiply(
-                np.divide(indicator, exp_r_less_q_time_t), 
-                np.subtract(
-                    np.multiply(forward, N(d1_)),
-                    np.multiply(K, N(d2_))
-                           )
-                        )
 
 def BS_with_greeks(S:np.array, K:np.array, T: np.array, r: np.array, q: np.array, sigma: np.array, call_put: np.array) -> Tuple[np.array]:
     """
-    
-
     Parameters
     ----------
     S : np.array

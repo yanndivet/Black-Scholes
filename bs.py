@@ -128,6 +128,7 @@ def BS_implied_volatility(S:np.array, K:np.array, T: np.array, r: np.array, q: n
     px, _, _, _, vega, _ = BS_with_greeks(S=S, K=K, T=T, r=r, q=q, sigma=vol, call_put=call_put)
     while np.max(np.abs(px - price)) > error_max and counter < counter_max:
         vol = vol - np.clip((px - price)/np.clip(vega,1e-7,None)/100, - vol / 2,vol / 2)
+        vol = np.clip(vol, vol_min, vol_max)
         px, _, _, _, vega, _ = BS_with_greeks(S=S, K=K, T=T, r=r, q=q, sigma=vol, call_put=call_put)
         counter += 1
     return vol

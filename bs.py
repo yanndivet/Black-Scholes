@@ -133,5 +133,37 @@ def BS_implied_volatility(S:np.array, K:np.array, T: np.array, r: np.array, q: n
         counter += 1
     return vol
 
+def generate_gbm_paths(S:float, T: float, r: float, q: float, sigma:float, steps:int, number_paths:int) -> np.array:
+    """
+    
+    Parameters
+    ----------
+    S : float
+        Price of the underlying.
+    T : float
+        Time to maturity in year.
+    r : float
+        risk free interest rate in absolute: 5% interest rate should be entered as 0.05.
+    q : float
+        risk free interest rate in absolute: 5% interest rate should be entered as 0.05.
+    sigma : float
+        annualized volatility in absolute: 30% volatility should be entered as 0.3..
+    steps : int
+        number of steps to consider per path. 252 for 1 year
+    number_paths : int
+        number of paths to generate.
 
+    Returns
+    -------
+    np.array
+        np.array size steps, number_paths with each path as a column of the array 
+
+    """
+    deltaT = T / steps
+    sqrtDeltaT = np.sqrt(deltaT)
+    logS = np.log(S) + np.cumsum((
+        (r-q-0.5*sigma**2)*deltaT+sigma*sqrtDeltaT*np.random.normal(size=(steps, number_paths))),
+        axis=0
+        )
+    return np.exp(logS)
     

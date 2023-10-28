@@ -6,7 +6,8 @@ from math import pi
 sqrt_2pi = np.sqrt(2*pi)
 number_days_per_year = 252 # used for theta calculation
 N = norm.cdf
-
+vol_min, vol_start, vol_max = 0.01, 0.4, 10
+error_max = 1e-4
 
 def N_delta(x:np.array) -> np.array:
     return np.exp(-np.square(x)/2) / sqrt_2pi
@@ -28,7 +29,7 @@ def BS_with_greeks(S:np.array, K:np.array, T: np.array, r: np.array, q: np.array
     sigma : np.array
         annualized volatility in absolute: 30% volatility should be entered as 0.3.
     call_put : np.array
-        call or put option: 'C' for call, 'P' for put, case sensitive.
+        call or put option: 'C' for call, 'P' for put.
 
     Returns
     -------
@@ -94,3 +95,42 @@ def BS_with_greeks(S:np.array, K:np.array, T: np.array, r: np.array, q: np.array
     return price, delta, gamma, theta, vega, rho
 
 
+def BS_implied_volatility(S:np.array, K:np.array, T: np.array, r: np.array, q: np.array, price: np.array, call_put: np.array) -> np.array:
+    """
+    
+    Parameters
+    ----------
+    S : np.array
+        Price of the underlying.
+    K : np.array
+        Exercice price of the option.
+    T : np.array
+        Time to maturity in year.
+    r : np.array
+        risk free interest rate in absolute: 5% interest rate should be entered as 0.05.
+    q : np.array
+        risk free interest rate in absolute: 5% interest rate should be entered as 0.05.
+    price : np.array
+        price of the option.
+    call_put : np.array
+        call or put option: 'C' for call, 'P' for put.
+
+    Returns
+    -------
+    vol : np.array
+        Imply Black Scholes volatilty from an option price, i.e. the volatility sigma such that the 
+        theoretical price using Black Scholes and this volatility is equal to the target option price.
+        annualized volatility in absolute: 30% volatility should be entered as 0.3.
+
+    """
+    vol = np.ones_like(price) * vol_start
+    counter, counter_max = 0, 25
+    px, _, _, _, vega, _ = BS_with_greeks(S=S, K=K, T=T, r=r, q=q, sigma=vol, call_put=call_put)
+    while np.max(np.abs(px - price)) > error_max and counter < counter_max:
+        vol = vol - np.clip((px - price)/np.clip(vega,1e-7,None)/100, - vol / 2,vol / 2)
+        px, _, _, _, vega, _ = BS_with_greeks(S=S, K=K, T=T, r=r, q=q, sigma=vol, call_put=call_put)
+        counter += 1
+    return vol
+
+
+    
